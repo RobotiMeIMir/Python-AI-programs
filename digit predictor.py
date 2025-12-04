@@ -1,24 +1,23 @@
-from sklearn.datasets import fetch_openml
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn import metrics
+import tensorflow as tf
+from tensorflow.keras import layers, models
 import matplotlib.pyplot as plt
 
-mnist = fetch_openml('mnist_784', version=1)
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+x_train, x_test = x_train/255.0, x_test/255.0
 
-X = mnist['data'] / 255.0
-y = mnist['target'].astype(int)
+model = models.Sequential([
+    layers.Flatten(input_shape = (28, 28)), #converts to binary
+    layers.Dense(128, activation =  "relu"),  #makes the computer understand
+    layers.Dense(10,activation = "softmax")
+])
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = 42)
-
-model = LogisticRegression(max_iter=10000)
-model.fit(X_train, y_train)
-
-y_pred = model.predict(X_test)
-accuracy = metrics.accuracy_score(y_test, y_pred)
-print(f"Test accuracy: {accuracy}")
-
-for i in range(5): 
-    plt.imshow(X_test.iloc[i].values.reshape(28, 28), cmap=plt.cm.binary)
-    plt.title(f"Predicted: {y_pred[i]}, Actual: {y_test.iloc[i]}")
-    plt.show()
+model.compile(optimizer = "adam", 
+              loss = "sparse_categorical_crosstropy", #classifies the problem
+              metrics = ["accuracy"]) #tells us the report of accuracy
+model.fit(x_train, y_train, epochs = 5) 
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print("Test Accuracy.", test_acc)
+predictions = model.predict(x_test)
+plt.imshow(x_test[0], cmap= plt.cm.binary) 
+plt.title("Predicted", predictions[0].argmax())
+plt.show()
