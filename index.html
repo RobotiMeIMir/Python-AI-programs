@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lojë Quiz - Historia e Nazizmit</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Quiz Historia - Nazizmi</h1>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="score" id="score" style="display: none;">
+            Rezultati: <span id="scoreValue">0</span>/10
+        </div>
+
+        <div id="quizContainer">
+            <!-- Pyetjet do të ngarkohen këtu -->
+        </div>
+
+        <button class="btn" id="nextBtn" style="display: none;" onclick="nextQuestion()">Pyetja tjetër</button>
+        <button class="btn" id="restartBtn" style="display: none;" onclick="restartQuiz()">Luaj përsëri</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
