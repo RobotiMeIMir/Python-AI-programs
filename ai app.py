@@ -84,4 +84,58 @@ st.rerun()
     st.markdown(html + '</div>', unsafe_allow_html=True)
     
 def run_safe_ai_image_gen():
-    st.info("This feature is currently under development. Please check back later.")
+    FILTER_API_URL = "https://filters-zeta.vercel.app/api/filter"
+    IMG_MODEL ="stabilityai/stable-diffusion-x1-base-1.0"
+    img_client = InterferenceClient(provider ="hf_interference", api_key = config.HF_API_KEY)
+    st.title("Safe AI Image Generator")
+    
+    def is_prompt_safe(prompt:str):
+        try:
+            response = requests.post(
+                FILTER_API_URL,
+                json={"text": prompt},
+                timeout=15
+            )
+            
+            if response.status_code != 200:
+                return False, f"Filter API failed with status {response.status_code}: {response.text}"
+            
+            data = response.json()
+            if data.get("ok") is True:
+                return True, None
+            return False, data.get("reason", "Unsafe prompt")
+        except Exception as e:
+            return False, f"Filter API error: {e}"
+        
+    def generate_image(prompt:str):
+        safe, err = is_prompt_safe(prompt)
+        if not safe:
+            return None, err
+        try:
+            image =img_client.text_to_image(prompt=prompt, model=IMG_MODEL)
+            return image, None
+        except Exception as e:
+            return None, f"Image generation error: {e}"
+        
+    with st.form("img_form"):
+        p = st.text_area("Image description: ", height = 120)
+        ok = st.form_submit_button("Generate Image")
+    if ok:
+        if not p.strip():
+            st.warning("Please enter a valid image description.")
+        else:
+            with st.spinner("Generating image..."):
+                img, error = generate_image(p.strip())
+            if error:
+                st.error(error)
+            else:
+                st.image(img, use_container_width=True)
+                st.session_state.generated_image = img
+                
+    img = st.session_state.get("generated_image")
+    if img:
+        buf = BytesIO(); 
+        img.save(buf, format="PNG")
+        st.download_button("Download Image", buf.getvalue(), "generated_image.png", "image/png")
+        
+        
